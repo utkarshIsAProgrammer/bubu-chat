@@ -4,8 +4,9 @@
   "description": "",
   "main": "src/index.js",
   "scripts": {
-    "dev": "nodemon src/index.js",
-    "start": "node src/index.js"
+    "dev": "nodemon --require ./preload.cjs src/index.js",
+    "start": "node --require ./preload.cjs src/index.js",
+    "seed": "node --require ./preload.cjs src/seeds/user.seed.js"
   },
   "keywords": [],
   "author": "",

@@ -1,6 +1,9 @@
+import "../lib/polyfill.js";
 import { config } from "dotenv";
 import { connectDB } from "../lib/db.js";
 import User from "../models/user.model.js";
+import bcrypt from "bcryptjs";
+import mongoose from "mongoose";
 
 config();
 
@@ -104,10 +107,25 @@ const seedDatabase = async () => {
   try {
     await connectDB();
 
-    await User.insertMany(seedUsers);
-    console.log("Database seeded successfully");
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash("123456", salt);
+
+    const emails = seedUsers.map((u) => u.email);
+    await User.deleteMany({ email: { $in: emails } });
+
+    const usersToInsert = seedUsers.map((user) => ({
+      ...user,
+      password: hashedPassword,
+    }));
+
+    await User.insertMany(usersToInsert);
+    console.log("Database seeded successfully with hashed passwords! All accounts have password: '123456'");
+    await mongoose.disconnect();
+    process.exit(0);
   } catch (error) {
     console.error("Error seeding database:", error);
+    await mongoose.disconnect();
+    process.exit(1);
   }
 };
 
